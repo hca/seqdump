@@ -2,6 +2,7 @@
 gnulib-tool --import full-write
 gnulib-tool --add-import safe-read
 gnulib-tool --add-import xfreopen
+gnulib-tool --add-import stat-size
 
 automake --add-missing
 autoreconf
