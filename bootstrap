@@ -1,0 +1,7 @@
+#!/bin/bash
+gnulib-tool --import full-write
+gnulib-tool --add-import safe-read
+gnulib-tool --add-import xfreopen
+
+automake --add-missing
+autoreconf
