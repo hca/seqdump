@@ -104,8 +104,16 @@ parse_fasta(
 {
   char *temp_ptr = out_buffer;
   char ch;
+  bool add_nl = false;
   while(*in_pos < n_read && *out_pos < buffer_size)
     {
+      if(add_nl)
+        {
+          *state = 5;
+          *temp_ptr = '\n';
+          temp_ptr++;
+          (*out_pos)++;
+        }
       ch = in_buffer[*in_pos];
       if(ch == '\n')
         {
@@ -123,6 +131,14 @@ parse_fasta(
               break;
             case 5:
               *state = 0;
+              if(*out_pos < buffer_size)
+                {
+                  *temp_ptr = '\n';
+                  temp_ptr++;
+                  (*out_pos)++;
+                }
+              else
+                add_nl = true;
               break;
             default:
               return false;
@@ -174,6 +190,16 @@ parse_fasta(
         }
       (*in_pos)++;
     }
+  if(add_nl)
+  {
+    if
+    {
+      *state = 5;
+      *temp_ptr = '\n';
+      temp_ptr++;
+      (*out_pos)++;
+    }
+  }
 
   if(*state == 0 || *state == 4 || *state == 5)
     return true;
@@ -237,6 +263,12 @@ dump(char *in_buffer, char *temp_buffer, size_t bufsize)
   return true;
 }
 
+/*TODO*/
+bool interactive_dump()
+{
+  return false;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -276,19 +308,19 @@ main(int argc, char *argv[])
           usage(EXIT_FAILURE);
         }
     }
-  
+
   int argind = optind;
   bool have_read_stdin = false;
-  
+
   int file_open_mode = O_RDONLY;
-  
+
   if (fstat (STDOUT_FILENO, &stat_buf) < 0)
     error (EXIT_FAILURE, errno, ("standard output"));
-  
+
   outsize = io_blksize (stat_buf);
-  
+
   infile = "-";
-  
+ 
   do
     {
       if (argind < argc)
@@ -319,7 +351,7 @@ main(int argc, char *argv[])
         goto there;
       }
       insize = io_blksize(stat_buf);
-      //fdadvise (input_descriptor, 0, 0, FADVISE_SEQUENTIAL);
+      posix_fadvise(input_descriptor, 0, 0, POSIX_FADV_SEQUENTIAL);
       
       insize = MAX(insize, outsize);
       inbuf = (char *)xmalloc (insize + page_size - 1);
